@@ -1,0 +1,22 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - echo Build started on `date`
+      - echo Building the Docker image... 
+      - git clone https://github.com/camilla-m/docker-node-linuxtips.git
+      - cd docker-node-linuxtips  
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Building the Docker image...    
+      - IMAGETAG=$(git rev-parse HEAD)      
+      - docker build -t ${IMAGE_REPO_NAME}:$IMAGETAG .
+      - docker tag ${IMAGE_REPO_NAME}:$IMAGETAG ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_NAME}:$IMAGETAG    
+      - echo Build completed on `date`
+      - echo Pushing the Docker image...
+      - docker images
+      - aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com
+      - docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_NAME}:$IMAGETAG
